@@ -9,6 +9,7 @@ class ExampleTest extends TestCase
     /** @test */
     public function example()
     {
+        dd(config());
         $this->assertTrue(true);
     }
 }

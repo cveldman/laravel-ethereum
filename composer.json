@@ -8,7 +8,7 @@
     ],
     "require": {
         "php": "^7.3|^8.0",
-        "laravel/framework": "^8.40"
+        "sc0vu/web3.php": "^0.1.4"
     },
     "require-dev": {
         "orchestra/testbench": "^6.0",
@@ -23,7 +23,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Appbakkers\\Ethereum\\Tests\\": "tests"
+            "Appbakkers\\Ethereum\\Tests\\": "tests/"
         }
     },
     "extra": {
