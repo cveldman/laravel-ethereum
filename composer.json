@@ -1,0 +1,36 @@
+{
+    "name": "appbakkers/laravel-ethereum",
+    "authors": [
+        {
+            "name": "Corné Veldman",
+            "email": "corne@appbakkers.nl"
+        }
+    ],
+    "require": {
+        "php": "^7.3|^8.0",
+        "laravel/framework": "^8.40"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.0",
+        "phpunit/phpunit": "^9.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Appbakkers\\Ethereum\\": "src/",
+            "Appbakkers\\Ethereum\\Database\\Factories\\": "database/factories/",
+            "Appbakkers\\Ethereum\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Appbakkers\\Ethereum\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Appbakkers\\Ethereum\\EthereumServiceProvider"
+            ]
+        }
+    }
+}
