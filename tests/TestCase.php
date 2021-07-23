@@ -9,11 +9,6 @@ class TestCase extends \Orchestra\Testbench\TestCase
 {
     use RefreshDatabase;
 
-    public function setUp(): void
-    {
-        parent::setUp();
-    }
-
     protected function getPackageProviders($app)
     {
         return [
@@ -21,21 +16,10 @@ class TestCase extends \Orchestra\Testbench\TestCase
         ];
     }
 
-    /* protected function getEnvironmentSetUp($app)
-    {
-        $app['migrator']->path(__DIR__.'/../database/migrations');
-
-    }
-
     protected function defineDatabaseMigrations()
     {
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
-
         $this->loadLaravelMigrations();
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
 
-        $this->artisan('migrate')->run();
-
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
-    } */
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+    }
 }

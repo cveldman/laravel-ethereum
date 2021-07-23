@@ -2,19 +2,29 @@
 
 namespace Appbakkers\Ethereum\Tests\Feature;
 
-use Appbakkers\Ethereum\Models\User;
+use Appbakkers\Ethereum\Tests\Fixtures\User;
 use Appbakkers\Ethereum\Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 
 class UserTest extends TestCase
 {
     /** @test */
     public function example()
     {
-        $user = User::factory()->create();
+        $user = User::create([
+            'name' => 'Appbakkers',
+            'email' => 'support@appbakkers.nl',
+            'password' => Hash::make('password'),
+            'address' => '0x966a7327D0853aE5200a5051820ba28B07e39DE3'
+        ]);
 
-        $this->assertEquals(1000, $user->balance());
+        $balance = $user->balance();
+        $allowance = $user->allowance();
 
-        dd($user);
+        dd($allowance);
+
+        $user->transfer(1);
+
+        $this->assertEquals($balance - 1, $user->balance());
     }
 }

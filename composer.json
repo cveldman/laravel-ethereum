@@ -16,14 +16,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Appbakkers\\Ethereum\\": "src/",
-            "Appbakkers\\Ethereum\\Database\\Factories\\": "database/factories/",
-            "Appbakkers\\Ethereum\\Database\\Seeders\\": "database/seeders/"
+            "Appbakkers\\Ethereum\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Appbakkers\\Ethereum\\Tests\\": "tests/"
+            "Appbakkers\\Ethereum\\Tests\\": "tests"
         }
     },
     "extra": {

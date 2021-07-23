@@ -7,12 +7,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    use Billable; // todo: CanInteractWithContract Trait?
+    use Billable;
 
     protected $fillable = [
         'name',
         'email',
-        'password'
+        'password',
+        'address'
     ];
 
     protected $hidden = [

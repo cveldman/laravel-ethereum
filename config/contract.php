@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'address' => '0xf007d2487E472D20272759F9203753059577d932',
+    'address' => '0x3776eF174B761e4160EDa88faB4Ce2806d305379',
+    'owner' => '0x3776eF174B761e4160EDa88faB4Ce2806d305379',
     'abi' => '[
     {
       "constant": true,
