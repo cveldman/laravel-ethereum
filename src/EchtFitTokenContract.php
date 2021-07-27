@@ -2,18 +2,33 @@
 
 namespace Appbakkers\Ethereum;
 
+use Appbakkers\Ethereum\Helpers\Web3Utils;
+use Appbakkers\Ethereum\Traits\Web3Unlockable;
 use Web3\Contract;
 use Web3\Web3;
+use Web3p\EthereumTx\Transaction;
 
 class EchtFitTokenContract implements TokenContract
 {
+
+    /**
+     * Echttoken DAP Instance
+     * @var Contract
+     */
     public $contract;
+
+    /**
+     * Web3 instance
+     * @var Web3
+     */
+    public $web3;
+
 
     public function __construct()
     {
-        $web3 = new Web3(config('ethereum.host'));
+        $this->web3 = new Web3(config('ethereum.host'));
 
-        $this->contract = new Contract($web3->provider, config('contract.abi'));
+        $this->contract = new Contract($this->web3->provider, config('contract.abi'));
     }
 
     public function balanceOf($address): int
@@ -59,5 +74,41 @@ class EchtFitTokenContract implements TokenContract
         return !$errors;
     }
 
+    public function mintCoins($recipient, $amount): string {
+
+        $nonce = null;
+
+        $this->web3->getEth()->getTransactionCount(config('contract.owner'), 'pending', function($err, $response) use(&$nonce){
+            if ($err != null)
+                dd($err);
+
+            echo $response->value;
+            $nonce = $response->value;
+        });
+
+        $data = '0x'. $this->contract->at(config('contract.address'))->getData('mintCoins', $recipient, $amount);
+        $txParams = [
+            'from' => config('contract.owner'),
+            'to' => config('contract.address'),
+            'value'=> '0x0',
+            'nonce' => $nonce,
+            'gas' => '0x33450',
+            'gasPrice' => '0x0',
+            'chainId' => config('ethereum.chain_id'),
+            'data' => $data
+        ];
+
+        $transaction = new Transaction($txParams);
+        $signedTransaction = $transaction->sign(config('ethereum.private_key'));
+
+        $transactionHash = '';
+        $this->web3->getEth()->sendRawTransaction('0x'.$signedTransaction, function($err, $tx) use(&$transactionHash){
+            if($err != null)
+                dd($err);
+            $transactionHash = $tx;
+        });
+
+        return $transactionHash;
+    }
 
 }

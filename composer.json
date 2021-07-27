@@ -8,7 +8,8 @@
     ],
     "require": {
         "php": "^7.3|^8.0",
-        "sc0vu/web3.php": "^0.1.4"
+        "sc0vu/web3.php": "^0.1.4",
+        "web3p/ethereum-tx" : "^0.4.2"
     },
     "require-dev": {
         "orchestra/testbench": "^6.0",
