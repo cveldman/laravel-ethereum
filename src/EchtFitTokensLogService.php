@@ -8,6 +8,7 @@
 
 namespace Appbakkers\Ethereum;
 
+use Illuminate\Support\Facades\Log;
 use Web3\Web3;
 use Appbakkers\Ethereum\Helpers\Web3Utils;
 use Appbakkers\Ethereum\Objects\EventLog;
@@ -34,12 +35,8 @@ class EchtFitTokensLogService
      * @param $topics Array of topic filters
      * @param callable $callback callback handler
      */
-    public function getAllLogs($topics, callable $callback)
+    public function getAllLogs($topics)
     {
-        if (is_callable($callback) !== true) {
-            throw new \InvalidArgumentException('The last param must be callback function.');
-        }
-
         // Create call params
         $params = [
             'fromBlock' => 'earliest',
@@ -47,36 +44,38 @@ class EchtFitTokensLogService
             'address' => config('contract.address'),
         ];
 
-        $this->getLogs($params, $topics, $callback);
+        return $this->getLogs($params, $topics);
     }
 
     /**
      * Call eth_getLogs with params and topics
-     * @param $params Array
-     * @param $topics Array
+     * @param $params array
+     * @param $topics array
      * @param callable $callback
      */
-    public function getLogs($params, $topics, callable $callback){
+    public function getLogs($params, $topics){
 
         // add topics if supplied
         if(count($topics) > 0)
             $params['topics'] = $topics;
 
+        $logs = [];
         $this->web3->getEth()->getLogs(
-            $params, function($err, $response) use($callback){
+            $params,
+            function($err, $response) use(&$logs){
 
-            // Decoded logs
-            $logs = [];
+            if($err != null) {
+                Log::error($err);
+                dd($err);
+            }
 
             // Convert to human readable objects
             if($response != null)
                 foreach ($response as $log){
                     $logs[] = new EventLog($log);
                 }
-
-            // Call callback
-            $callback($err, $logs);
         });
+        return $logs;
     }
 
     /**
@@ -84,7 +83,7 @@ class EchtFitTokensLogService
      * @param $address
      * @param callable $callback
      */
-    public function getAllLogsForWallet($address, callable  $callback) {
+    public function getAllLogsForWallet($address) {
 
         // Padd bytes to 32
         $bytesAddress = Web3Utils::padBytes($address, 32);
@@ -96,6 +95,6 @@ class EchtFitTokensLogService
         ];
 
         // Call eth_getLogs
-        $this->getAllLogs($topics, $callback);
+        return $this->getAllLogs($topics);
     }
 }
