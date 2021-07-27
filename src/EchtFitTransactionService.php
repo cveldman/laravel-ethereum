@@ -30,9 +30,10 @@ class EchtFitTransactionService
      * @param string $transactionHash
      * @param callable $callback
      */
-    public function getTransactionReceipt(string $transactionHash, callable $callback){
+    public function getTransactionReceipt(string $transactionHash){
 
-        $this->web3->getEth()->getTransactionReceipt($transactionHash, function($err, $response) use($callback) {
+        $receipt = null;
+        $this->web3->getEth()->getTransactionReceipt($transactionHash, function($err, $response) use(&$receipt) {
 
             $decodedLogs = [];
 
@@ -43,7 +44,9 @@ class EchtFitTransactionService
                 $response->decodedLogs = $decodedLogs;
             }
 
-            $callback($err, $response);
+            $receipt = $response;
         });
+
+        return $receipt;
     }
 }
