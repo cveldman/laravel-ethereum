@@ -1,3 +1,72 @@
+
+
+## Installeren
+```shell
+php artisan vendor:publish --tag=ethereum-migrations
+```
+
+## Configureren
+```dotenv
+ETHEREUM_HOST=94.213.158.62
+CONTRACT_ADDRESS=
+CONTRACT_WALLET_ADDRESS=
+```
+
+## Examples
+
+### Versturen van tokens
+```php 
+try 
+{
+    $address = '0x00000000000000000000000000000000000';
+    $tokens = 1;
+
+    EthereumContract::mint($address, $tokens);
+    // OR
+    auth()->user()->mint($tokens);
+} 
+catch(Exception $exception) 
+{
+
+}
+```
+
+### Betalen met tokens
+```php 
+try 
+{
+    $address = '';
+    $tokens = 1;
+
+    EthereumContract::mint($address, $tokens);
+    // OR
+    auth()->user()->mint($tokens);
+} 
+catch(Exception $exception) 
+{
+
+}
+```
+
+### Verifieren van betaling
+```php 
+try 
+{
+
+} 
+catch(Exception $exception) 
+{
+
+}
+```
+
+TODO: Uitleggen over verifieren van betaling
+
+Als een transactie gelukt is dan return hij een id van de transactie.
+Er moet een worker job komen die elke minuut checkt of pending transacties gelukt
+zijn en hierbij de gekoppelde actie (product beschikbaar stellen) verwerken.
+
+
 Error handling
 
 ```php
@@ -27,28 +96,4 @@ try {
 } catch (Exception $e) {
     // Something else happened, completely unrelated to Stripe
 }
-```
-
-
-
-
-
-
-```php
-
-class ApiController {
-    
-    public function __construct(EthereumClient $ethereumClient) {
-        $this->ethereumClient = $ethereumClient;
-    }
-    
-    public function index() {
-        
-    }
-    
-}
-
-
-
-
 ```
