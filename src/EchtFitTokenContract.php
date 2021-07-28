@@ -3,13 +3,16 @@
 namespace Appbakkers\Ethereum;
 
 use Appbakkers\Ethereum\Helpers\Web3Utils;
+use Appbakkers\Ethereum\Traits\CanSendTransactions;
 use Appbakkers\Ethereum\Traits\Web3Unlockable;
 use Web3\Contract;
 use Web3\Web3;
-use Web3p\EthereumTx\Transaction;
+
 
 class EchtFitTokenContract implements TokenContract
 {
+
+    use CanSendTransactions;
 
     /**
      * Echttoken DAP Instance
@@ -74,37 +77,30 @@ class EchtFitTokenContract implements TokenContract
         return !$errors;
     }
 
-    public function mintCoins($recipient, $amount): string {
+    /**
+     * Give specified ammount of tokens to address
+     * @param $recipient
+     * @param $amount
+     * @return string
+     */
+    public function mintCoins(string $recipient, int $amount): string {
 
-        $nonce = null;
+        // Get Nonce for chain
+        $nonce = $this->getNonce(config('contract.owner'));
 
-        $this->web3->getEth()->getTransactionCount(config('contract.owner'), 'pending', function($err, $response) use(&$nonce){
-            if ($err != null)
-                dd($err);
-
-            echo $response->value;
-            $nonce = $response->value;
-        });
-
+        // Convert method and parameters to Hash string
         $data = '0x'. $this->contract->at(config('contract.address'))->getData('mintCoins', $recipient, $amount);
-        $txParams = [
-            'from' => config('contract.owner'),
-            'to' => config('contract.address'),
-            'value'=> '0x0',
-            'nonce' => $nonce,
-            'gas' => '0x33450',
-            'gasPrice' => '0x0',
-            'chainId' => config('ethereum.chain_id'),
-            'data' => $data
-        ];
 
-        $transaction = new Transaction($txParams);
-        $signedTransaction = $transaction->sign(config('ethereum.private_key'));
+        $signedTransaction = $this->signDataTransaction(config('contract.owner'), config('contract.address'), $nonce, $data);
 
+        // transaction Hash to return
         $transactionHash = '';
-        $this->web3->getEth()->sendRawTransaction('0x'.$signedTransaction, function($err, $tx) use(&$transactionHash){
+
+        // Send raw transaction to chain
+        $this->web3->getEth()->sendRawTransaction($signedTransaction, function($err, $tx) use(&$transactionHash){
             if($err != null)
                 dd($err);
+
             $transactionHash = $tx;
         });
 

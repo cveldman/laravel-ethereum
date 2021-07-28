@@ -20,4 +20,9 @@ trait Billable
     {
         (new EchtFitTokenContract())->transferFrom($this->address, config('contract.address'), $tokens);
     }
+
+    public function mint(int $tokens): void
+    {
+        (new EchtFitTokenContract())->mintCoins($this->address, $tokens);
+    }
 }
