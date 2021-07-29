@@ -13,11 +13,11 @@ trait Billable
 
     public function allowance(): int
     {
-        return (new EchtFitTokenContract())->allowance($this->address, config('contract.address'));
+        return (new EchtFitTokenContract())->allowance($this->address, config('contract.owner'));
     }
 
     public function transfer(int $tokens): void
     {
-        (new EchtFitTokenContract())->transferFrom($this->address, config('contract.address'), $tokens);
+        (new EchtFitTokenContract())->transferFrom($this->address, config('contract.owner'), $tokens);
     }
 }

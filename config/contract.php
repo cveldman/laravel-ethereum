@@ -2,7 +2,7 @@
 
 return [
     'address' => '0x3776eF174B761e4160EDa88faB4Ce2806d305379',
-    'owner' => '0x3776eF174B761e4160EDa88faB4Ce2806d305379',
+    'owner' => '0xe5423bab00679e0768d6ded41f98e23cccbee5cf',
     'abi' => '[
     {
       "constant": true,

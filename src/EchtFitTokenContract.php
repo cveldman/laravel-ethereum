@@ -48,7 +48,7 @@ class EchtFitTokenContract implements TokenContract
 
         $this->contract
             ->at(config('contract.address'))
-            ->call('transferFrom', $sender, $recipient, $amount, function ($err, $transaction) use (&$errors) {
+            ->send('transferFrom', $sender, $recipient, $amount, function ($err, $transaction) use (&$errors) {
                 if ($err == null) {
                     $errors = false;
                 } else {

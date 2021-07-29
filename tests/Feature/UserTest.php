@@ -19,12 +19,20 @@ class UserTest extends TestCase
         ]);
 
         $balance = $user->balance();
+
+        dump('BALANCE: ' . $balance);
+
         $allowance = $user->allowance();
 
-        dd($allowance);
+        dump('ALLOWANCE: ' . $allowance);
 
         $user->transfer(1);
 
+        dump('TRANSFER: ' . $balance);
+
         $this->assertEquals($balance - 1, $user->balance());
+
+        dump('TRANSFER: ' . $balance);
+
     }
 }
