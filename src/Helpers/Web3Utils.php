@@ -53,4 +53,20 @@ class Web3Utils {
         $string = hex2bin($hexString);
         return unpack('C*', $string);
     }
+
+    /**
+     * @param $string
+     * @return string
+     */
+    public static function string2Hex($string) {
+        return bin2hex($string);
+    }
+
+    /**
+     * @param $hexString
+     * @return bool|string
+     */
+    public static function hex2String($hexString) {
+        return hex2bin($hexString);
+    }
 }

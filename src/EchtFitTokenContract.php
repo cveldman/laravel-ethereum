@@ -2,18 +2,36 @@
 
 namespace Appbakkers\Ethereum;
 
+use Appbakkers\Ethereum\Helpers\Web3Utils;
+use Appbakkers\Ethereum\Traits\CanSendTransactions;
+use Appbakkers\Ethereum\Traits\Web3Unlockable;
 use Web3\Contract;
 use Web3\Web3;
 
+
 class EchtFitTokenContract implements TokenContract
 {
+
+    use CanSendTransactions;
+
+    /**
+     * Echttoken DAP Instance
+     * @var Contract
+     */
     public $contract;
+
+    /**
+     * Web3 instance
+     * @var Web3
+     */
+    public $web3;
+
 
     public function __construct()
     {
-        $web3 = new Web3(config('ethereum.host'));
+        $this->web3 = new Web3(config('ethereum.host'));
 
-        $this->contract = new Contract($web3->provider, config('contract.abi'));
+        $this->contract = new Contract($this->web3->provider, config('contract.abi'));
     }
 
     public function balanceOf($address): int
@@ -59,5 +77,34 @@ class EchtFitTokenContract implements TokenContract
         return !$errors;
     }
 
+    /**
+     * Give specified ammount of tokens to address
+     * @param $recipient
+     * @param $amount
+     * @return string
+     */
+    public function mintCoins(string $recipient, int $amount): string {
+
+        // Get Nonce for chain
+        $nonce = $this->getNonce(config('contract.owner'));
+
+        // Convert method and parameters to Hash string
+        $data = '0x'. $this->contract->at(config('contract.address'))->getData('mintCoins', $recipient, $amount);
+
+        $signedTransaction = $this->signDataTransaction(config('contract.owner'), config('contract.address'), $nonce, $data);
+
+        // transaction Hash to return
+        $transactionHash = '';
+
+        // Send raw transaction to chain
+        $this->web3->getEth()->sendRawTransaction($signedTransaction, function($err, $tx) use(&$transactionHash){
+            if($err != null)
+                dd($err);
+
+            $transactionHash = $tx;
+        });
+
+        return $transactionHash;
+    }
 
 }
