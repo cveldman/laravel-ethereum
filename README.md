@@ -6,24 +6,72 @@ php artisan vendor:publish --tag=ethereum-migrations
 ```
 
 ## Configureren
+Voeg onderstaande waarden toe in .env file
+
 ```dotenv
 ETHEREUM_HOST=94.213.158.62
-CONTRACT_ADDRESS=
-CONTRACT_WALLET_ADDRESS=
+ETHEREUM_CHAIN_ID=1234
+CONTRACT_ADDRESS="0x3776eF174B761e4160EDa88faB4Ce2806d305379"
+CONTRACT_OWNER_ADDRESS="0xe5423bab00679e0768d6ded41f98e23cccbee5cf"
+CONTRACT_PRIVATE_KEY=""
+
 ```
 
 ## Examples
 
-### Versturen van tokens
+### Token balance checken van een gebruiker
+
+```php
+try
+{
+	// Hex address of the users wallet
+    $address = '0x00000000000000000000000000000000000'; 
+	(new EchtFitTokenContract())->balance($address, $tokens);
+
+	 // OR when using trait
+    auth()->user()->balance();
+
+}catch(Exception $ex)
+{
+	
+}
+```
+
+### Schenken van tokens aan een gebruiker
 ```php 
 try 
 {
-    $address = '0x00000000000000000000000000000000000';
+
+    $tokens = 1;
+    // Hex address of the users wallet
+    $address = '0x00000000000000000000000000000000000'; 
+    $transactionHash = 	(new EchtFitTokenContract())->mint($address, $tokens);
+	
+    // OR when using trait
+    $transactionHash = auth()->user()->mint($tokens);
+} 
+catch(Exception $exception) 
+{
+
+}
+```
+
+### Token van een gebruiker innemen/verzilveren
+
+```php 
+try 
+{
+	
     $tokens = 1;
 
-    EthereumContract::mint($address, $tokens);
+	// Hex address of the users wallet
+    $userAddress = '0x00000000000000000000000000000000000'; 
+    $contractAddress = config('contract.owner');
+    
+    $transactionHash = (new EchtFitTokenContract())->transferFrom($userAddress, $contractAddres, $tokens);
+
     // OR
-    auth()->user()->mint($tokens);
+    $transactionHash = auth()->user()->transfer($tokens);
 } 
 catch(Exception $exception) 
 {
@@ -31,16 +79,38 @@ catch(Exception $exception)
 }
 ```
 
-### Betalen met tokens
+### Verifieren van transacties
+
+>Als een transactie gelukt is dan return hij een id van de transactie. Er moet een worker job komen die b.v. elke minuut checkt of pending transacties gelukt zijn en hierbij de gekoppelde actie (product beschikbaar stellen) verwerken.
+
+
+#### Aan de hand van transaction hash
+
 ```php 
 try 
 {
-    $address = '';
-    $tokens = 1;
+	$transcationHash = "0x00000000000000000000000000000000000"
 
-    EthereumContract::mint($address, $tokens);
-    // OR
-    auth()->user()->mint($tokens);
+	$logService = new EchtFitTtransactionService();
+	
+	$receipt = $logService->getTransactionReceipt($transactionHash);
+
+	if($receipt != null){
+		if($receipt->status == "0x1")
+		{
+			// sucess, transatie is afgehandeld en voltooid
+			// $receipt->decodedLog verteld meer over de transactie, 
+			// wat er is gebeurt & hoeveel tokens er verstuurd zijn.
+			// $receipt->decodedLogs[0]->arguments
+			
+		} else
+		{
+			// Failure
+		}
+	}else
+		// Status pending, or transaction doesn't exist
+	
+	
 } 
 catch(Exception $exception) 
 {
@@ -48,51 +118,40 @@ catch(Exception $exception)
 }
 ```
 
-### Verifieren van betaling
-```php 
-try 
-{
+#### Via Event logs
 
-} 
-catch(Exception $exception) 
+```php
+try
+{
+	$service = new EchtFitTokenLogService();
+	
+	// Hex address of the users wallet
+    $walletAddress = '0x00000000000000000000000000000000000';
+    
+	$eventLogs = $service->getAllLogsForWallet($walletAddress);
+	
+	foreach($eventLogs as $decodedLog) {
+		// decodedLog verteld meer over de transactie en bevat o.a. de transaction hash, 
+		// wat er is gebeurt & hoeveel tokens er verstuurd zijn.
+		// decodedLog->arguments
+	}
+}
+catch(Exception $ex)
 {
 
 }
 ```
-
-TODO: Uitleggen over verifieren van betaling
-
-Als een transactie gelukt is dan return hij een id van de transactie.
-Er moet een worker job komen die elke minuut checkt of pending transacties gelukt
-zijn en hierbij de gekoppelde actie (product beschikbaar stellen) verwerken.
-
 
 Error handling
 
 ```php
 
 try {
-    // Use Stripe's library to make requests...
-} catch(\Stripe\Exception\CardException $e) {
-    // Since it's a decline, \Stripe\Exception\CardException will be caught
-    echo 'Status is:' . $e->getHttpStatus() . '\n';
-    echo 'Type is:' . $e->getError()->type . '\n';
-    echo 'Code is:' . $e->getError()->code . '\n';
-    // param is '' in this case
-    echo 'Param is:' . $e->getError()->param . '\n';
-    echo 'Message is:' . $e->getError()->message . '\n';
-} catch (\Stripe\Exception\RateLimitException $e) {
-    // Too many requests made to the API too quickly
-} catch (\Stripe\Exception\InvalidRequestException $e) {
-    // Invalid parameters were supplied to Stripe's API
-} catch (\Stripe\Exception\AuthenticationException $e) {
-    // Authentication with Stripe's API failed
-    // (maybe you changed API keys recently)
-} catch (\Stripe\Exception\ApiConnectionException $e) {
-    // Network communication with Stripe failed
-} catch (\Stripe\Exception\ApiErrorException $e) {
-    // Display a very generic error to the user, and maybe send
-    // yourself an email
+    // Use the library to make requests...
+} catch (InsufficientAllowanceException $e)
+	// The allowance is incorrect, this might mean the user doesn't have a active subscription.
+} catch (TransactionFailedException $e) {
+	// The actual transaction could not be created check the $error property and the $message for more info.
 } catch (Exception $e) {
     // Something else happened, completely unrelated to Stripe
 }

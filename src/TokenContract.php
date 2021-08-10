@@ -9,5 +9,5 @@ interface TokenContract {
 
     // public function transfer($address, $tokens) : bool;
     // public function approve($address) : bool;
-    public function transferFrom($sender, $recipient, $amount) : bool;
+    public function transferFrom($sender, $recipient, $amount) : string;
 }

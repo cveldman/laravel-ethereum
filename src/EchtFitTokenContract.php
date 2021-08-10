@@ -2,6 +2,8 @@
 
 namespace Appbakkers\Ethereum;
 
+use Appbakkers\Ethereum\Exceptions\InsufficientAllowanceException;
+use Appbakkers\Ethereum\Exceptions\TransactionFailedException;
 use Appbakkers\Ethereum\Helpers\Web3Utils;
 use Appbakkers\Ethereum\Traits\CanSendTransactions;
 use Appbakkers\Ethereum\Traits\Web3Unlockable;
@@ -34,6 +36,12 @@ class EchtFitTokenContract implements TokenContract
         $this->contract = new Contract($this->web3->provider, config('contract.abi'));
     }
 
+
+    /**
+     * @param $address
+     * @return int
+     * @throws TransactionFailedException if operation fails
+     */
     public function balanceOf($address): int
     {
         $b = 0;
@@ -41,12 +49,21 @@ class EchtFitTokenContract implements TokenContract
         $this->contract
             ->at(config('contract.address'))
             ->call('balanceOf', $address, function ($err, $transaction) use (&$b) {
+                if($err != null)
+                    Throw new TransactionFailedException($err);
+
                 $b = $transaction[0]->value;
             });
 
         return $b;
     }
 
+    /**
+     * @param $owner
+     * @param $spender
+     * @return int
+     * @throws TransactionFailedException if operation fails
+     */
     public function allowance($owner, $spender): int
     {
         $b = 0;
@@ -54,34 +71,49 @@ class EchtFitTokenContract implements TokenContract
         $this->contract
             ->at(config('contract.address'))
             ->call('allowance', $owner, $spender, function ($err, $transaction) use (&$b) {
+                if($err != null)
+                    Throw new TransactionFailedException($err);
+
                 $b = $transaction[0]->value;
             });
 
         return $b;
     }
 
-    public function transferFrom($sender, $recipient, $amount): bool
+    /**
+     * @param $sender
+     * @param $recipient
+     * @param $amount
+     * @return string
+     * @throws InsufficientAllowanceException
+     */
+    public function transferFrom($sender, $recipient, $amount): string
     {
-        $errors = false;
+        // check allowance
+        $allowance = $this->allowance($sender, config('contract.owner'));;
+        if($amount > $allowance)
+            throw new InsufficientAllowanceException();
 
+        // Create transaction
+        $transactionHash = '';
         $this->contract
             ->at(config('contract.address'))
-            ->send('transferFrom', $sender, $recipient, $amount, function ($err, $transaction) use (&$errors) {
-                if ($err == null) {
-                    $errors = false;
-                } else {
-                    dump($err);
-                }
+            ->send('transferFrom', $sender, $recipient, $amount, function ($err, $transaction) use(&$transactionHash) {
+                if($err != null)
+                    Throw new TransactionFailedException($err);
+
+                $transactionHash = $transaction;
             });
 
-        return !$errors;
+        return $transactionHash;
     }
 
     /**
      * Give specified ammount of tokens to address
-     * @param $recipient
-     * @param $amount
+     * @param string $recipient
+     * @param int $amount
      * @return string
+     * @throws TransactionFailedException if operation fails
      */
     public function mintCoins(string $recipient, int $amount): string {
 
@@ -99,7 +131,7 @@ class EchtFitTokenContract implements TokenContract
         // Send raw transaction to chain
         $this->web3->getEth()->sendRawTransaction($signedTransaction, function($err, $tx) use(&$transactionHash){
             if($err != null)
-                dd($err);
+                Throw new TransactionFailedException($err);
 
             $transactionHash = $tx;
         });
